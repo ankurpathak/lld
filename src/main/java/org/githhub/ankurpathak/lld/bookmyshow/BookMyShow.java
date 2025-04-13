@@ -1,0 +1,416 @@
+package org.githhub.ankurpathak.lld.bookmyshow;
+
+import lombok.AllArgsConstructor;
+import lombok.ToString;
+
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.*;
+
+@ToString
+class User {
+    private static int idCounter = 0;
+    int id;
+    String name;
+
+    User(String name) {
+        this.id = ++idCounter;
+        this.name = name;
+    }
+}
+
+class UserManager {
+    Map<Integer, User> users = new HashMap<>();
+
+    public void addUser(User user) {
+        users.put(user.id, user);
+    }
+
+    public void removeUser(User user) {
+        users.remove(user.id);
+    }
+}
+
+
+@ToString
+class Movie {
+    private static int idCounter = 0;
+    int id;
+    String name;
+    Duration duration;
+
+    public Movie(String name, Duration duration) {
+        this.id = ++idCounter;
+        this.name = name;
+        this.duration = duration;
+    }
+}
+
+class MovieManager {
+    Map<Integer, Movie> movies = new HashMap<>();
+    Map<City,List<Movie>> cityMovies = new HashMap<>();
+    {
+        for (City city : City.values()) {
+            cityMovies.put(city, new ArrayList<>());
+        }
+    }
+
+    public void addMovieToCity(Movie movie, City city) {
+        movies.put(movie.id, movie);
+        cityMovies.get(city).add(movie);
+    }
+
+    public void removeMovieFromCity(Movie movie, City city) {
+        movies.remove(movie.id);
+        cityMovies.get(city).remove(movie);
+    }
+
+}
+
+@ToString
+class Theater {
+    private static int idCounter = 0;
+    int id;
+    String address;
+    City city;
+    Map<Integer, Screen> screens = new HashMap<>();
+    Map<Integer, Show> shows = new HashMap<>();
+
+    public Theater(String address, City city) {
+        this.id = ++idCounter;
+        this.city = city;
+        this.address = address;
+    }
+
+    void addScreen(Screen screen) {
+        screens.put(screen.id, screen);
+    }
+
+    void removeScreen(Screen screen) {
+        screens.remove(screen.id);
+    }
+
+    void addShow(Show show) {
+        shows.put(show.id, show);
+    }
+
+    void removeShow(Show show) {
+        shows.remove(show.id);
+    }
+}
+
+
+@ToString
+class Show {
+    private static int idCounter = 0;
+    int id;
+    Movie movie;
+    Screen screen;
+    LocalDate date;
+    LocalTime time;
+    Duration duration;
+    Set<String> seatBookings =  new HashSet<>();
+    Map<SeatType, BigDecimal> seatCost = new HashMap<>();
+
+
+
+    public Show(Movie movie, Screen screen, LocalDate date, LocalTime time, Duration duration) {
+        this.id = ++idCounter;
+        this.movie = movie;
+        this.date = date;
+        this.time = time;
+        this.duration = duration;
+        this.screen = screen;
+    }
+
+    void addSeatBooking(String seat) {
+        seatBookings.add(seat);
+    }
+
+    void removeSeatBooking(String seat) {
+        seatBookings.remove(seat);
+    }
+
+    void addSeatCost(SeatType type, BigDecimal cost) {
+        seatCost.put(type, cost);
+    }
+
+    void removeSeatCost(SeatType type) {
+        seatCost.remove(type);
+    }
+
+
+}
+
+@ToString
+class Screen{
+    private static int idCounter = 0;
+    int id;
+    String name;
+    Map<String, Seat> seats = new HashMap<>();
+
+    Screen(String name) {
+        this.id = ++idCounter;
+        this.name = name;
+    }
+
+
+
+    void addSeat(Seat seat) {
+        seats.put(seat.identifier, seat);
+    }
+
+    void removeSeat(Seat seat) {
+        seats.remove(seat.identifier);
+    }
+
+
+}
+
+@ToString
+class Seat {
+    String identifier;
+    int row;
+    int col;
+    SeatType type;
+
+    public Seat(String identifier, int row, int col, SeatType type) {
+        this.identifier = identifier;
+        this.row = row;
+        this.col = col;
+        this.type = type;
+    }
+}
+
+enum SeatType {
+    REGULAR, PREMIUM, LUXURY
+}
+
+class TheaterManager {
+    Map<Integer, Theater> theaters = new HashMap<>();
+    Map<City, List<Theater>> cityTheaters = new HashMap<>();
+    {
+        for (City city : City.values()) {
+            cityTheaters.put(city, new ArrayList<>());
+        }
+    }
+
+    public void addTheater(Theater theater) {
+        theaters.put(theater.id, theater);
+        cityTheaters.get(theater.city).add(theater);
+    }
+
+    public void removeTheater(Theater theater) {
+        theaters.remove(theater.id);
+        cityTheaters.get(theater.city).remove(theater);
+    }
+}
+
+@ToString
+class Booking {
+    private static int idCounter = 0;
+    int id;
+    Show show;
+    List<Seat> seats = new ArrayList<>();
+    User user;
+    BookingStatus status = BookingStatus.INPROGRESS;
+    Payment payment;
+
+    public Booking(Show show, List<Seat> seats, User user) {
+        this.id = ++idCounter;
+        this.show = show;
+        this.seats = seats;
+        this.user = user;
+    }
+
+    BigDecimal computeAmount() {
+        BigDecimal amount = BigDecimal.ZERO;
+        for (Seat seat : seats) {
+            amount = amount.add(show.seatCost.get(seat.type));
+        }
+        return amount;
+    }
+
+
+    void assignPayment(Payment payment){
+        this.payment = payment;
+        if(payment.status == PaymentStatus.SUCCESS){
+            for (Seat seat : seats) {
+                show.addSeatBooking(seat.identifier);
+            }
+            status = BookingStatus.CONFIRMED;
+        } else {
+            status = BookingStatus.CANCELLED;
+        }
+    }
+
+}
+
+enum BookingStatus{
+    INPROGRESS, CONFIRMED, CANCELLED
+}
+
+@ToString
+class Payment {
+    private static int idCounter = 0;
+    int id;
+    BigDecimal amount = BigDecimal.ZERO;
+    PaymentStatus status = PaymentStatus.PENDING;
+    Payment(BigDecimal amount, PaymentStatus status){
+        id = ++idCounter;
+        this.amount = amount;
+        this.status = status;
+    }
+
+}
+
+enum PaymentStatus {
+    PENDING, SUCCESS, FAILED
+}
+
+class BookingManager {
+    Map<Integer, Booking> bookings = new HashMap<>();
+    Map<Integer, Payment> payments = new HashMap<>();
+
+    public void addBooking(Booking booking) {
+        bookings.put(booking.id, booking);
+    }
+
+    public void removeBooking(Booking booking) {
+        bookings.remove(booking.id);
+    }
+
+    public void addPayment(Payment payment) {
+        payments.put(payment.id, payment);
+    }
+
+    public void removePayment(Payment payment) {
+        payments.remove(payment.id);
+    }
+
+}
+
+
+
+enum City{
+    DELHI, MUMBAI, BANGALORE, PUNE
+}
+
+class BookMyShow {
+    MovieManager movieManager;
+    TheaterManager theaterManager;
+    BookingManager bookingManager;
+    UserManager userManager;
+
+    public BookMyShow() {
+        movieManager = new MovieManager();
+        theaterManager = new TheaterManager();
+        bookingManager = new BookingManager();
+        userManager = new UserManager();
+    }
+
+    public static void main(String[] args) {
+        BookMyShow bookMyShow = new BookMyShow();
+        Movie avenger = new Movie("Avengers", Duration.ofHours(2));
+        Movie batman = new Movie("Batman", Duration.ofHours(3));
+        bookMyShow.movieManager.addMovieToCity(avenger, City.PUNE);
+        bookMyShow.movieManager.addMovieToCity(batman, City.PUNE);
+        Theater phoenixMall = new Theater("PVR Phoenix Mall", City.PUNE);
+        Screen audi = new Screen("Audi");
+        audi.addSeat(new Seat("A1", 1, 1, SeatType.REGULAR));
+        audi.addSeat(new Seat("B2", 2, 1, SeatType.PREMIUM));
+        audi.addSeat(new Seat("C3", 3, 1, SeatType.LUXURY));
+        phoenixMall.addScreen(audi);
+        Screen ferrari = new Screen("Ferrari");
+        ferrari.addSeat(new Seat("A1", 1, 1, SeatType.REGULAR));
+        ferrari.addSeat(new Seat("B2", 2, 1, SeatType.PREMIUM));
+        ferrari.addSeat(new Seat("C3", 31, 1, SeatType.LUXURY));
+        phoenixMall.addScreen(ferrari);
+        Screen lamborghini = new Screen("Lamborghini");
+        lamborghini.addSeat(new Seat("A1", 1, 1, SeatType.REGULAR));
+        lamborghini.addSeat(new Seat("B2", 2, 1, SeatType.PREMIUM));
+        lamborghini.addSeat(new Seat("C3", 31, 1, SeatType.LUXURY));
+        phoenixMall.addScreen(lamborghini);
+        Show avengersShowEvening = new Show(avenger, audi, LocalDate.now(), LocalTime.now().plusHours(5), avenger.duration.plusMinutes(30));
+        avengersShowEvening.addSeatCost(SeatType.LUXURY, BigDecimal.valueOf(1000));
+        avengersShowEvening.addSeatCost(SeatType.PREMIUM, BigDecimal.valueOf(500));
+        avengersShowEvening.addSeatCost(SeatType.REGULAR, BigDecimal.valueOf(200));
+        Show avengersShowMorning = new Show(avenger, audi, LocalDate.now(), LocalTime.now().minusHours(5), avenger.duration.plusMinutes(30));
+        avengersShowMorning.addSeatCost(SeatType.LUXURY, BigDecimal.valueOf(800));
+        avengersShowMorning.addSeatCost(SeatType.PREMIUM, BigDecimal.valueOf(400));
+        avengersShowMorning.addSeatCost(SeatType.REGULAR, BigDecimal.valueOf(150));
+        Show batmanEvening = new Show(batman, ferrari, LocalDate.now(), LocalTime.now().plusHours(6), batman.duration.plusMinutes(30));
+        batmanEvening.addSeatCost(SeatType.LUXURY, BigDecimal.valueOf(1000));
+        batmanEvening.addSeatCost(SeatType.PREMIUM, BigDecimal.valueOf(500));
+        batmanEvening.addSeatCost(SeatType.REGULAR, BigDecimal.valueOf(200));
+        Show batmanMorning = new Show(batman, ferrari, LocalDate.now(), LocalTime.now().minusHours(6), batman.duration.plusMinutes(30));
+        batmanMorning.addSeatCost(SeatType.LUXURY, BigDecimal.valueOf(800));
+        batmanMorning.addSeatCost(SeatType.PREMIUM, BigDecimal.valueOf(400));
+        batmanMorning.addSeatCost(SeatType.REGULAR, BigDecimal.valueOf(150));
+
+        phoenixMall.addShow(avengersShowEvening);
+        phoenixMall.addShow(avengersShowMorning);
+        phoenixMall.addShow(batmanEvening);
+        phoenixMall.addShow(batmanMorning);
+
+        Theater inOrbitMall = new Theater("PVR InOrbit Mall", City.PUNE);
+        Screen swift = new Screen("Swift");
+        swift.addSeat(new Seat("A1", 1, 1, SeatType.REGULAR));
+        swift.addSeat(new Seat("B2", 2, 1, SeatType.PREMIUM));
+        swift.addSeat(new Seat("C3", 3, 1, SeatType.LUXURY));
+        inOrbitMall.addScreen(swift);
+        Screen alto = new Screen("Alto");
+        alto.addSeat(new Seat("A1", 1, 1, SeatType.REGULAR));
+        alto.addSeat(new Seat("B2", 2, 1, SeatType.PREMIUM));
+        alto.addSeat(new Seat("C3", 31, 1, SeatType.LUXURY));
+        inOrbitMall.addScreen(alto);
+        Screen baleno = new Screen("Baleno");
+        baleno.addSeat(new Seat("A1", 1, 1, SeatType.REGULAR));
+        baleno.addSeat(new Seat("B2", 2, 1, SeatType.PREMIUM));
+        baleno.addSeat(new Seat("C3", 31, 1, SeatType.LUXURY));
+        inOrbitMall.addScreen(baleno);
+        Show avengersShowEveningOther = new Show(avenger, audi, LocalDate.now(), LocalTime.now().plusHours(5), avenger.duration.plusMinutes(30));
+        avengersShowEveningOther.addSeatCost(SeatType.LUXURY, BigDecimal.valueOf(1000));
+        avengersShowEveningOther.addSeatCost(SeatType.PREMIUM, BigDecimal.valueOf(500));
+        avengersShowEveningOther.addSeatCost(SeatType.REGULAR, BigDecimal.valueOf(200));
+
+        Show avengersShowMorningOther = new Show(avenger, audi, LocalDate.now(), LocalTime.now().minusHours(5), avenger.duration.plusMinutes(30));
+        avengersShowMorningOther.addSeatCost(SeatType.LUXURY, BigDecimal.valueOf(800));
+        avengersShowMorningOther.addSeatCost(SeatType.PREMIUM, BigDecimal.valueOf(400));
+        avengersShowMorningOther.addSeatCost(SeatType.REGULAR, BigDecimal.valueOf(150));
+
+        Show batmanEveningOther = new Show(batman, ferrari, LocalDate.now(), LocalTime.now().plusHours(6), batman.duration.plusMinutes(30));
+        batmanEveningOther.addSeatCost(SeatType.LUXURY, BigDecimal.valueOf(1000));
+        batmanEveningOther.addSeatCost(SeatType.PREMIUM, BigDecimal.valueOf(500));
+        batmanEveningOther.addSeatCost(SeatType.REGULAR, BigDecimal.valueOf(200));
+
+        Show batmanMorningOther = new Show(batman, ferrari, LocalDate.now(), LocalTime.now().minusHours(6), batman.duration.plusMinutes(30));
+        batmanMorningOther.addSeatCost(SeatType.LUXURY, BigDecimal.valueOf(800));
+        batmanMorningOther.addSeatCost(SeatType.PREMIUM, BigDecimal.valueOf(400));
+        batmanMorningOther.addSeatCost(SeatType.REGULAR, BigDecimal.valueOf(150));
+
+        inOrbitMall.addShow(avengersShowEveningOther);
+        inOrbitMall.addShow(avengersShowMorningOther);
+        inOrbitMall.addShow(batmanEveningOther);
+        inOrbitMall.addShow(batmanMorningOther);
+
+        bookMyShow.theaterManager.addTheater(new Theater("PVR Phoenix Mall", City.PUNE));
+        bookMyShow.theaterManager.addTheater(new Theater("PVR InOrbit Mall", City.PUNE));
+
+        User ankur = new User("Ankur");
+        User pradeep =  new User("Pradeep");
+
+        Booking bookingAnkur = new Booking(avengersShowEvening, List.of(new Seat("A1", 1, 1, SeatType.LUXURY), new Seat("B2", 2, 1, SeatType.PREMIUM)), ankur);
+        Payment paymentAnkur = new Payment(bookingAnkur.computeAmount(), PaymentStatus.SUCCESS);
+        bookingAnkur.assignPayment(paymentAnkur);
+        Booking bookingPradeep = new Booking(batmanMorningOther, List.of(new Seat("A1", 1, 1, SeatType.LUXURY), new Seat("C3", 2, 1, SeatType.REGULAR)), pradeep);
+        Payment paymentPradeep = new Payment(bookingPradeep.computeAmount(), PaymentStatus.FAILED);
+        bookingPradeep.assignPayment(paymentPradeep);
+
+        System.out.println(bookingAnkur);
+        System.out.println(bookingPradeep);
+
+    }
+}

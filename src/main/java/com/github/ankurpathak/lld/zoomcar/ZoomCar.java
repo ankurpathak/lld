@@ -70,9 +70,6 @@ abstract class Vehicle {
 class Car extends Vehicle {
     public Car(String registration, Store store, int yearOfManufacture, double kmDriven, BigDecimal securityDeposit, BigDecimal hourlyRate) {
         super(registration, store, yearOfManufacture, kmDriven, securityDeposit, hourlyRate);
-        this.yearOfManufacture = yearOfManufacture;
-        this.kmDriven = kmDriven;
-        this.hourlyRate = hourlyRate;
     }
 
     CarType carType = CarType.HATCHBACK;
@@ -161,6 +158,7 @@ class Booking {
     Booking(Vehicle vehicle, User user, Store store, int bookingForDays, PaymentManager paymentManager) {
         id = ++idCounter;
         this.vehicle = vehicle;
+        this.vehicle.status = VehicleStatus.BOOKED;
         this.user = user;
         this.store = store;
         booking = Instant.now();
@@ -209,6 +207,7 @@ class Booking {
     void processDrop() {
         if (status == BookingStatus.IN_PROGRESS &&  paidAmount.compareTo(billedAmount()) >= 0){
             status = BookingStatus.COMPLETED;
+            vehicle.status = VehicleStatus.AVAILABLE;
             drop = Instant.now();
             Payment payment = paymentManager.createPayment(store, BigDecimal.valueOf(-1).multiply(computeRefund()), PaymentStatus.SUCCESS);
             addPayment(payment);
@@ -264,6 +263,9 @@ class BookingManager {
     }
 
     Booking createBooking(Vehicle vehicle, User user, Store store, int bookingForDays) {
+        if (vehicle.status != VehicleStatus.AVAILABLE) {
+            throw new IllegalStateException("Vehicle not available for booking.");
+        }
         Booking booking = new Booking(vehicle, user, store, bookingForDays, paymentManager);
         addBooking(booking);
         return booking;

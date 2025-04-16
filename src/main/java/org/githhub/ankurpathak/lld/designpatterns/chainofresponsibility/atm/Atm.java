@@ -1,4 +1,4 @@
-package org.githhub.ankurpathak.lld.designpatterns.chainofresponsibility.logger;
+package org.githhub.ankurpathak.lld.designpatterns.chainofresponsibility.atm;
 
 import lombok.Setter;
 
@@ -61,7 +61,7 @@ class Atm extends AtmDispenser {
     }
 }
 
-class AtmClient {
+class Main {
     public static void main(String[] args) {
         Atm atm = new Atm();
         int amount = 1300;

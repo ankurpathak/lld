@@ -2,6 +2,7 @@ package org.githhub.ankurpathak.lld.splitwise;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -10,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+@ToString(exclude = "userExpenseBalanceSheet")
 class User {
     private static int idCounter = 0;
     int id;
@@ -41,51 +44,23 @@ class User {
     void removeGroup(Group group){
         groups.remove(group.id);
     }
-
-
-
 }
 
+
+@ToString
 class Balance {
     BigDecimal owe = BigDecimal.ZERO;
     BigDecimal getBack = BigDecimal.ZERO;
 }
 
+
+@ToString
 class UserExpenseBalanceSheet{
     BigDecimal totalExpense = BigDecimal.ZERO;
     BigDecimal totalPayment =  BigDecimal.ZERO;
     BigDecimal totalOwe = BigDecimal.ZERO;
     BigDecimal totalGetBack = BigDecimal.ZERO;
-
     Map<User, Balance> friendsBalance =  new HashMap<>();
-
-    @Override
-    public String toString() {
-        return "UserExpenseBalanceSheet{" +
-                "totalExpense=" + totalExpense +
-                ", totalPayment=" + totalPayment +
-                ", totalOwe=" + totalOwe +
-                ", totalGetBack=" + totalGetBack +
-                ", friendsBalance=" + frinedsBalanceToString()
-                +
-                '}';
-
-
-    }
-
-    public String frinedsBalanceToString() {
-        StringBuilder bdr = new StringBuilder();
-        for(User friend: friendsBalance.keySet()){
-            bdr.append(friend.name)
-                    .append(" owe: ")
-                    .append(friendsBalance.get(friend).owe)
-                    .append(" getBack: ")
-                    .append(friendsBalance.get(friend).getBack)
-                    .append("   ");
-        }
-
-        return bdr.toString();
-    }
 }
 
 class UserExpenseBalanceSheetManager {
@@ -107,8 +82,6 @@ class UserExpenseBalanceSheetManager {
             }
         }
     }
-
-
 }
 
 class UserManager {
@@ -122,6 +95,7 @@ class UserManager {
         users.remove(user.id);
     }
 }
+
 
 class Group {
     int id;
@@ -187,6 +161,7 @@ class Split {
 enum SplitType {
     EQUAL, PERCENTAGE, EXACT
 }
+
 
 class Expense {
     private static int idCounter = 0;
@@ -338,20 +313,14 @@ class SplitWise {
                 new Split(pradeep, BigDecimal.valueOf(300)),
                 new Split(prateek, BigDecimal.valueOf(300))
         ));
-
-
         System.out.println(ankur.name + " " + ankur.userExpenseBalanceSheet);
-        System.out.println(ankur.name + " " + prateek.userExpenseBalanceSheet);
-        System.out.println(ankur.name + " " + pradeep.userExpenseBalanceSheet);
-
+        System.out.println(prateek.name + " " + prateek.userExpenseBalanceSheet);
+        System.out.println(pradeep.name + " " + pradeep.userExpenseBalanceSheet);
     }
 
     public static void main(String[] args) {
         SplitWise splitWise = new SplitWise();
         splitWise.initialize();
-
     }
-
-
 }
 

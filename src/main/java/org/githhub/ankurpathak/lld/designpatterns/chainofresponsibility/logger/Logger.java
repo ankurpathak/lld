@@ -83,7 +83,7 @@ class Logger extends AbstractLogger {
     }
 }
 
-class Client {
+class LoggerClient {
     public static void main(String[] args) {
         Logger logger = new Logger();
         logger.logMessage(LoggerLevel.INFO, "This is an information.");
@@ -98,3 +98,4 @@ class Client {
 
     }
 }
+

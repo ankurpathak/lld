@@ -11,14 +11,14 @@ abstract class AbstractLogger {
     protected LoggerLevel level;
 
     @Setter
-    private AbstractLogger nextAbstractLogger;
+    private AbstractLogger nextLogger;
 
 
     public void logMessage(LoggerLevel level, String message) {
         if (this.level.ordinal() <= level.ordinal()) {
             write(message);
-        }else if (nextAbstractLogger != null) {
-            nextAbstractLogger.logMessage(level, message);
+        }else if (nextLogger != null) {
+            nextLogger.logMessage(level, message);
         }
     }
 
@@ -76,9 +76,9 @@ class Logger extends AbstractLogger {
     private AbstractLogger buildChain(){
         AbstractLogger errorLogger = new ErrorLogger();
         AbstractLogger debugAbstractLogger = new DebugLogger();
-        errorLogger.setNextAbstractLogger(debugAbstractLogger);
+        errorLogger.setNextLogger(debugAbstractLogger);
         AbstractLogger infoLogger = new InfoLogger();
-        debugAbstractLogger.setNextAbstractLogger(infoLogger);
+        debugAbstractLogger.setNextLogger(infoLogger);
         return errorLogger;
     }
 }

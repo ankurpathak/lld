@@ -1,4 +1,4 @@
-package org.githhub.ankurpathak.lld.parkinglot;
+package com.github.ankurpathak.lld.parkinglot;
 
 import lombok.Getter;
 

@@ -1,4 +1,4 @@
-package org.githhub.ankurpathak.lld.bookmyshow;
+package com.github.ankurpathak.lld.bookmyshow;
 
 import lombok.AllArgsConstructor;
 import lombok.ToString;

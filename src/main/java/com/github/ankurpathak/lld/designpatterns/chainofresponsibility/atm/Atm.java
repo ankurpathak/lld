@@ -1,13 +1,17 @@
-package org.githhub.ankurpathak.lld.designpatterns.chainofresponsibility.atm;
+package com.github.ankurpathak.lld.designpatterns.chainofresponsibility.atm;
 
 import lombok.Setter;
 
-class AtmDispenser {
+interface IAtmDispenser {
+    void dispense(int amount);
+}
+
+class AtmDispenser implements IAtmDispenser {
     int denomination;
     int count;
 
     @Setter
-    AtmDispenser nextDispenser;
+    IAtmDispenser nextDispenser;
 
     public AtmDispenser(int denomination, int count) {
         this.denomination = denomination;
@@ -34,14 +38,13 @@ class AtmDispenser {
     }
 }
 
-class Atm extends AtmDispenser {
+class Atm implements IAtmDispenser {
 
     public Atm(){
-        super(-1, -1);
         this.dispenser = buildChain();
     }
 
-    AtmDispenser dispenser;
+    IAtmDispenser dispenser;
 
     private AtmDispenser buildChain(){
         AtmDispenser dispenser2000 = new AtmDispenser(2000, 1);

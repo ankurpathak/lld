@@ -1,4 +1,4 @@
-package org.githhub.ankurpathak.lld.connectfour;
+package com.github.ankurpathak.lld.connectfour;
 
 
 

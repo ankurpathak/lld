@@ -1,4 +1,4 @@
-package org.githhub.ankurpathak.lld.splitwise;
+package com.github.ankurpathak.lld.splitwise;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package org.githhub.ankurpathak.lld.tictactoe;
+package com.github.ankurpathak.lld.tictactoe;
 
 import java.util.*;
 

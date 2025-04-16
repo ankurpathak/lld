@@ -1,4 +1,4 @@
-package org.githhub.ankurpathak.lld.zoomcar;
+package com.github.ankurpathak.lld.zoomcar;
 
 import lombok.ToString;
 

@@ -1,0 +1,4 @@
+Three types of proxies:
+1. Virtual Proxy: A virtual proxy is a placeholder for an object that is expensive to create. It creates the real object only when it is needed. This is useful for optimizing performance and resource usage.
+2. Protection Proxy: A protection proxy controls access to the real object. It can restrict access based on user permissions or other criteria. This is useful for security and access control.
+3. Remote Proxy: A remote proxy represents an object that is located in a different address space. It allows communication between the client and the remote object. This is useful for distributed systems and network communication.

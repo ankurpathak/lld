@@ -1,9 +1,10 @@
 package com.github.ankurpathak.lld.designpatterns.state.vendingmachine;
 
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-import java.util.Collections;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 
 interface State {
     default void pressInsertCoin() {
@@ -37,7 +38,7 @@ interface State {
     }
 
 
-    default Item dispenseItem() {
+    default Item dispenseItem(int item) {
         throw new UnsupportedOperationException("Operation not supported in this state");
     }
 
@@ -51,16 +52,80 @@ interface State {
         throw new UnsupportedOperationException("Operation not supported in this state");
     }
 
-    private void notSupported() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("Operation not supported in this state");
-    }
+
 
 }
 
-class Coin { }
+enum Coin {
+    ONE(1),
+    TWO(2),
+    FIVE(5),
+    TEN(10);
 
-class Item { }
 
+    private final int value;
+
+    Coin(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
+}
+
+enum ItemType {
+    COKE, PEPSI, JUICE, SODA
+}
+
+@RequiredArgsConstructor
+class Item {
+    final ItemType type;
+    final BigDecimal price;
+}
+
+
+
+class ItemShelf {
+    Item item;
+    int code;
+
+    public ItemShelf(int code) {
+        this.code = code;
+    }
+}
+
+class Inventory {
+   Map<Integer, ItemShelf> itemShelves = new LinkedHashMap<>();
+
+    List<Coin> coins = new ArrayList<>();
+
+    void addItemShelf(int code) {
+        itemShelves.put(code, new ItemShelf(code));
+    }
+
+    void removeItemShelf(int code) {
+        itemShelves.remove(code);
+    }
+
+    void assignItem(int code, Item item) {
+        if (itemShelves.containsKey(code)) {
+            itemShelves.get(code).item = item;
+        } else {
+            throw new IllegalArgumentException("Item shelf with code " + code + " does not exist");
+        }
+    }
+
+    Item releaseItem(int code) {
+        if (itemShelves.containsKey(code)) {
+            Item item = itemShelves.get(code).item;
+            itemShelves.get(code).item =null;
+            return item;
+        } else {
+            throw new IllegalArgumentException("Item shelf with code " + code + " does not exist");
+        }
+    }
+}
 
 
 @Setter
@@ -68,10 +133,25 @@ class VendingMachine implements State {
 
     public VendingMachine(){
         this.currentState = new IdealState(this);
+        this.inventory = new Inventory();
     }
 
+    State currentState;
+    final Inventory inventory;
+    final Map<Coin, Integer> coins = new HashMap<>();
+    {
+        for(Coin coin : Coin.values()){
+            coins.put(coin, 0);
+        }
+    }
 
-    private State currentState;
+    void addCoin(Coin coin, int quantity) {
+        coins.put(coin, coins.get(coin) + quantity);
+    }
+
+    void removeCoin(Coin coin, int quantity) {
+        coins.put(coin, coins.get(coin) - quantity);
+    }
 
     @Override
     public void pressInsertCoin() {
@@ -104,8 +184,8 @@ class VendingMachine implements State {
     }
 
     @Override
-    public Item dispenseItem() {
-        return currentState.dispenseItem();
+    public Item dispenseItem(int code) {
+        return currentState.dispenseItem(code);
     }
 
     @Override
@@ -153,11 +233,13 @@ class HasMoneyState implements State {
 
     @Override
     public void pressSelectItem() {
-        vendingMachine.setCurrentState(new SelectItemState(vendingMachine));
+        vendingMachine.setCurrentState(new SelectionState(vendingMachine));
     }
 
     @Override
-    public void insertCoin(Coin coin) {}
+    public void insertCoin(Coin coin) {
+        vendingMachine.addCoin(coin, 1);
+    }
 
     @Override
     public List<Coin> cancel() {
@@ -166,10 +248,10 @@ class HasMoneyState implements State {
     }
 }
 
-class SelectItemState implements State {
+class SelectionState implements State {
     private final VendingMachine vendingMachine;
 
-    public SelectItemState(VendingMachine vendingMachine) {
+    public SelectionState(VendingMachine vendingMachine) {
         this.vendingMachine = vendingMachine;
     }
 
@@ -198,8 +280,8 @@ class DispenseItemState implements State {
     }
 
     @Override
-    public Item dispenseItem() {
+    public Item dispenseItem(int code) {
         vendingMachine.setCurrentState(new IdealState(vendingMachine));
-        return new Item();
+        return vendingMachine.inventory.releaseItem(code);
     }
 }

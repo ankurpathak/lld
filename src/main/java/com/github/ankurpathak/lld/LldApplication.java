@@ -1,4 +1,4 @@
-package org.githhub.ankurpathak.lld;
+package com.github.ankurpathak.lld;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

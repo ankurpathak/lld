@@ -1,5 +1,7 @@
 package com.github.ankurpathak.lld.designpatterns.composite.calculator;
 
+import lombok.Getter;
+
 interface IExpression {
     int evaluate();
 }
@@ -18,6 +20,7 @@ class Operand implements IExpression {
     }
 }
 
+@Getter
 enum Operator {
     ADD('+'),
     SUBTRACT('-'),
@@ -30,9 +33,6 @@ enum Operator {
         this.symbol = symbol;
     }
 
-    public char getSymbol() {
-        return symbol;
-    }
 }
 
 class Expression implements IExpression {
